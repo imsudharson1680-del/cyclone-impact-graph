@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyclone Impact Graph</title>
+  <link rel="preconnect" href="https://unpkg.com">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">CI</div>
+      <div>
+        <h1>CYCLONE IMPACT GRAPH</h1>
+        <span>Cascading Infrastructure Failure &amp; Pre-Landfall Intelligence</span>
+      </div>
+    </div>
+    <div class="header-status">
+      <span class="live-dot"></span>
+      <span>SIMULATION MODE</span>
+      <span class="badge">TRACK 5</span>
+    </div>
+  </header>
+
+  <nav class="nav-tabs">
+    <button class="nav-btn active" data-tab="overview">Overview</button>
+    <button class="nav-btn" data-tab="network">Dependency Graph</button>
+    <button class="nav-btn" data-tab="priority">Priority Actions</button>
+    <button class="nav-btn" data-tab="about">System</button>
+  </nav>
+
+  <main>
+    <section id="overview" class="tab-panel active">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow">PRE-LANDfall DECISION SUPPORT</p>
+          <h2>What will fail <span>next?</span></h2>
+          <p class="hero-copy">
+            Simulate cyclone-driven infrastructure failure and trace how disruption can propagate
+            across power, transport, healthcare and emergency shelter networks.
+          </p>
+        </div>
+        <div class="hero-actions">
+          <button id="runScenario" class="primary-btn">▶ Run Cyclone Scenario</button>
+          <button id="resetScenario" class="secondary-btn">Reset</button>
+        </div>
+      </div>
+
+      <div class="metric-grid">
+        <article class="metric-card">
+          <span>Hazard Exposure</span>
+          <strong id="hazardMetric">68</strong><small>/100</small>
+          <div class="meter"><i id="hazardMeter" style="width:68%"></i></div>
+        </article>
+        <article class="metric-card">
+          <span>Assets Monitored</span>
+          <strong id="assetMetric">16</strong>
+          <small>critical</small>
+          <div class="metric-sub">Power · Roads · Health · Shelters</div>
+        </article>
+        <article class="metric-card">
+          <span>Cascade Risk</span>
+          <strong id="cascadeMetric">—</strong>
+          <small id="cascadeLabel">run scenario</small>
+          <div class="meter"><i id="cascadeMeter" style="width:0%"></i></div>
+        </article>
+        <article class="metric-card">
+          <span>Priority Assets</span>
+          <strong id="priorityMetric">5</strong>
+          <small>flagged</small>
+          <div class="metric-sub">Requires pre-landfall review</div>
+        </article>
+      </div>
+
+      <div class="content-grid">
+        <section class="panel map-panel">
+          <div class="panel-head">
+            <div>
+              <p class="eyebrow">GEOSPATIAL VIEW</p>
+              <h3>Coastal Infrastructure Map</h3>
+            </div>
+            <div class="legend">
+              <span><i class="dot power"></i>Power</span>
+              <span><i class="dot road"></i>Road</span>
+              <span><i class="dot health"></i>Hospital</span>
+              <span><i class="dot shelter"></i>Shelter</span>
+            </div>
+          </div>
+          <div id="map"></div>
+          <div class="map-footer">
+            <span id="scenarioStatus">Scenario ready. Select an asset to inspect its dependencies.</span>
+            <span class="data-label">DEMO DATA</span>
+          </div>
+        </section>
+
+        <aside class="side-stack">
+          <section class="panel asset-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">SELECTED ASSET</p>
+                <h3 id="selectedName">Substation A</h3>
+              </div>
+              <span id="selectedType" class="type-badge power-bg">POWER</span>
+            </div>
+            <div class="asset-score">
+              <div class="score-ring"><span id="selectedScore">87</span><small>RISK</small></div>
+              <div>
+                <p id="selectedDescription">High dependency criticality; multiple downstream facilities rely on this node.</p>
+                <div class="score-row"><span>Exposure</span><b id="selectedExposure">82</b></div>
+                <div class="score-row"><span>Vulnerability</span><b id="selectedVulnerability">71</b></div>
+                <div class="score-row"><span>Dependency</span><b id="selectedDependency">94</b></div>
+              </div>
+            </div>
+            <button id="simulateBtn" class="danger-btn">⚡ Simulate Failure</button>
+          </section>
+
+          <section class="panel cascade-panel">
+            <div class="panel-head">
+              <div>
+                <p class="eyebrow">FAILURE CHAIN</p>
+                <h3>Downstream Impact</h3>
+              </div>
+              <span id="impactCount" class="count-badge">0 assets</span>
+            </div>
+            <div id="cascadeList" class="cascade-list">
+              <div class="empty-state">Run a failure simulation to reveal the dependency chain.</div>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <section id="network" class="tab-panel">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">SYSTEM TOPOLOGY</p>
+          <h2>Infrastructure Dependency Graph</h2>
+          <p>Nodes represent assets. Links represent operational dependency relationships.</p>
+        </div>
+        <button id="graphReset" class="secondary-btn">Clear Failure</button>
+      </div>
+      <section class="panel graph-panel">
+        <div id="graphCanvas"></div>
+      </section>
+      <div class="info-grid">
+        <div class="panel explanation">
+          <p class="eyebrow">HOW CASCADE WORKS</p>
+          <h3>Dependency propagation</h3>
+          <p>A failed node propagates disruption through its dependent nodes. Each downstream asset accumulates impact according to dependency strength and criticality.</p>
+          <div class="formula">Cascade Impact = Direct Failure + Dependency Propagation + Service Criticality</div>
+        </div>
+        <div class="panel explanation">
+          <p class="eyebrow">MODEL TRANSPARENCY</p>
+          <h3>Prototype composite risk</h3>
+          <p>Risk combines hazard exposure, infrastructure vulnerability and downstream dependency. These values are simulation inputs, not certified emergency predictions.</p>
+          <div class="formula">Prototype Risk = Exposure × Vulnerability × Dependency</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="priority" class="tab-panel">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">DECISION LAYER</p>
+          <h2>Priority Intervention</h2>
+          <p>Assets with high risk and high downstream dependency are surfaced for pre-landfall review.</p>
+        </div>
+        <button id="refreshPriority" class="primary-btn">Refresh Analysis</button>
+      </div>
+      <div class="panel">
+        <div class="priority-table-wrap">
+          <table>
+            <thead>
+              <tr><th>Priority</th><th>Asset</th><th>Type</th><th>Exposure</th><th>Dependency</th><th>Risk</th><th>Suggested Action</th></tr>
+            </thead>
+            <tbody id="priorityTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="tab-panel">
+      <div class="section-title">
+        <div>
+          <p class="eyebrow">PROJECT ARCHITECTURE</p>
+          <h2>From Hazard to Decision</h2>
+          <p>A transparent software architecture for cascading-impact analysis.</p>
+        </div>
+      </div>
+      <div class="architecture">
+        <div class="arch-node">🌀<b>Cyclone</b><small>Track + intensity</small></div>
+        <div class="arrow">→</div>
+        <div class="arch-node">🌧️<b>Hazards</b><small>Wind · Rain · Surge</small></div>
+        <div class="arrow">→</div>
+        <div class="arch-node">🗺️<b>Exposure</b><small>Geospatial layers</small></div>
+        <div class="arrow">→</div>
+        <div class="arch-node">🔗<b>Graph</b><small>Dependencies</small></div>
+        <div class="arrow">→</div>
+        <div class="arch-node">⚠️<b>Cascade</b><small>Failure propagation</small></div>
+        <div class="arrow">→</div>
+        <div class="arch-node">🎯<b>Priority</b><small>Intervention</small></div>
+      </div>
+      <div class="info-grid">
+        <div class="panel">
+          <p class="eyebrow">TEAM</p>
+          <h3>Sudharson A · Mohamed Muthakeen A · Monisha</h3>
+          <p>Track 5 — Cyclone Impact &amp; Infrastructure Vulnerability</p>
+        </div>
+        <div class="panel">
+          <p class="eyebrow">IMPORTANT LIMITATION</p>
+          <h3>Prototype / simulation</h3>
+          <p>This submission uses illustrative data. Operational deployment requires validated hazard models, authoritative infrastructure data, calibration, uncertainty analysis and emergency-management review.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <button id="closeModal" class="close">×</button>
+      <p class="eyebrow">CASCADE ANALYSIS COMPLETE</p>
+      <h2 id="modalTitle">Substation A Failure</h2>
+      <p id="modalText"></p>
+      <div id="modalStats" class="modal-stats"></div>
+      <button id="modalContinue" class="primary-btn">View Priority Actions</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

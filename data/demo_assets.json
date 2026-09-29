@@ -1,0 +1,58 @@
+[
+  {
+    "id": "subA",
+    "name": "Substation A",
+    "type": "power",
+    "exposure": 82,
+    "vulnerability": 71,
+    "dependency": 94
+  },
+  {
+    "id": "subB",
+    "name": "Substation B",
+    "type": "power",
+    "exposure": 68,
+    "vulnerability": 55,
+    "dependency": 76
+  },
+  {
+    "id": "bridgeA",
+    "name": "Bridge A",
+    "type": "road",
+    "exposure": 89,
+    "vulnerability": 63,
+    "dependency": 81
+  },
+  {
+    "id": "roadC",
+    "name": "Road C",
+    "type": "road",
+    "exposure": 84,
+    "vulnerability": 59,
+    "dependency": 72
+  },
+  {
+    "id": "hospB",
+    "name": "Hospital B",
+    "type": "health",
+    "exposure": 61,
+    "vulnerability": 65,
+    "dependency": 92
+  },
+  {
+    "id": "hospC",
+    "name": "PHC C",
+    "type": "health",
+    "exposure": 57,
+    "vulnerability": 58,
+    "dependency": 66
+  },
+  {
+    "id": "shelterD",
+    "name": "Shelter D",
+    "type": "shelter",
+    "exposure": 70,
+    "vulnerability": 42,
+    "dependency": 73
+  }
+]

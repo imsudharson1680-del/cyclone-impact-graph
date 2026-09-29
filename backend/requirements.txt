@@ -1,0 +1,2 @@
+# No third-party Python packages required for the MVP.
+# The backend uses Python's standard library.

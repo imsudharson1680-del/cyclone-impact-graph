@@ -1,0 +1,9 @@
+{
+  "name": "cyclone-impact-graph",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Hackathon MVP for cascading cyclone infrastructure impact analysis",
+  "scripts": {
+    "start": "python backend/app.py"
+  }
+}
