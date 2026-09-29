@@ -199,3 +199,49 @@ document.getElementById("modalContinue").onclick=()=>{
 
 window.addEventListener("resize",()=>{if(document.getElementById("network").classList.contains("active"))renderGraph()});
 initMap(); populatePriority(); selectAsset(ASSETS[0]); renderCascade(); renderGraph(); updateMetrics();
+
+// ==========================================
+// CYCLONE HAZARD API CONNECTION
+// ==========================================
+
+async function calculateLiveHazard() {
+
+    const weatherInput = {
+        wind_speed: 110,
+        rainfall: 85,
+        pressure: 970,
+        storm_surge: 2.1
+    };
+
+    try {
+
+        const response = await fetch("/api/hazard", {
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify(weatherInput)
+        });
+
+        if (!response.ok) {
+            throw new Error("Hazard API request failed");
+        }
+
+        const data = await response.json();
+
+        console.log("🌪️ Hazard API Result:", data);
+
+        return data;
+
+    } catch (error) {
+
+        console.error(
+            "❌ Unable to connect to Hazard API:",
+            error
+        );
+
+        return null;
+    }
+}
