@@ -9,6 +9,136 @@ const ASSETS = [
   {id:"shelterD",name:"Shelter D",type:"shelter",lat:13.098,lon:80.315,exposure:70,vulnerability:42,dependency:73,desc:"Emergency shelter with road and power dependencies."},
   {id:"shelterE",name:"Shelter E",type:"shelter",lat:13.045,lon:80.298,exposure:64,vulnerability:39,dependency:59,desc:"Secondary emergency shelter."}
 ];
+// ==========================================
+// DYNAMIC CYCLONE RISK ENGINE
+// ========================================
+const CYCLONE_SCENARIO = {
+    windSpeed: 100,
+    rainfall: 50,
+    pressure: 995,
+    stormSurge: 1.2
+};
+
+
+// Calculate cyclone hazard score
+function calculateCycloneHazard(
+    windSpeed,
+    rainfall,
+    pressure,
+    stormSurge
+) {
+
+    const windScore = Math.min(
+        windSpeed / 2,
+        50
+    );
+
+    const rainScore = Math.min(
+        rainfall / 5,
+        20
+    );
+
+    const pressureScore = Math.max(
+        0,
+        Math.min(
+            (1013 - pressure) / 2,
+            20
+        )
+    );
+
+    const surgeScore = Math.min(
+        stormSurge * 5,
+        10
+    );
+
+    const totalScore =
+        windScore +
+        rainScore +
+        pressureScore +
+        surgeScore;
+
+    const score = Math.round(
+        Math.min(totalScore, 100)
+    );
+
+    let level = "LOW";
+
+    if (score >= 75) {
+        level = "HIGH";
+    } else if (score >= 50) {
+        level = "MODERATE";
+    }
+
+    return {
+        score: score,
+        level: level
+    };
+}
+
+
+// Calculate individual infrastructure risk
+function calculateDynamicAssetRisk(
+    asset,
+    hazardScore
+) {
+
+    const hazardFactor =
+        hazardScore / 100;
+
+    const rawRisk =
+        hazardFactor *
+        asset.exposure *
+        asset.vulnerability *
+        asset.dependency /
+        10000;
+
+    return Math.min(
+        Math.round(rawRisk),
+        100
+    );
+}
+
+
+// Calculate current cyclone hazard
+const CURRENT_HAZARD = calculateCycloneHazard(
+    CYCLONE_SCENARIO.windSpeed,
+    CYCLONE_SCENARIO.rainfall,
+    CYCLONE_SCENARIO.pressure,
+    CYCLONE_SCENARIO.stormSurge
+);
+
+
+// Add dynamic risk to every asset
+ASSETS.forEach(asset => {
+
+    asset.baseRisk = Math.round(
+        asset.exposure *
+        asset.vulnerability *
+        asset.dependency /
+        10000
+    );
+
+    asset.dynamicRisk =
+        calculateDynamicAssetRisk(
+            asset,
+            CURRENT_HAZARD.score
+        );
+});
+
+
+// Debug information
+console.log(
+    "🌪️ CYCLONE HAZARD:",
+    CURRENT_HAZARD
+);
+
+console.log(
+    "🏗️ DYNAMIC ASSET RISKS:",
+    ASSETS.map(asset => ({
+        name: asset.name,
+        risk: asset.dynamicRisk
+    }))
+);
 
 const LINKS = [
   ["subA","hospB"],["subA","shelterD"],["subA","hospC"],["subB","roadD"],
