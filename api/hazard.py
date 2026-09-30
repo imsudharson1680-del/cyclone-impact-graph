@@ -1,17 +1,8 @@
-from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from pathlib import Path
+from http.server import BaseHTTPRequestHandler
 import json
-
-ROOT = Path(__file__).resolve().parents[1] / "frontend"
 
 
 def calculate_hazard(wind_speed, rainfall, pressure, storm_surge):
-    """
-    Prototype cyclone hazard scoring model.
-
-    This is a demonstration model for the hackathon.
-    It is NOT an official meteorological forecast.
-    """
 
     wind_score = min(wind_speed / 2.0, 50)
     rain_score = min(rainfall / 5.0, 20)
@@ -34,63 +25,34 @@ def calculate_hazard(wind_speed, rainfall, pressure, storm_surge):
     }
 
 
-class Handler(SimpleHTTPRequestHandler):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(
-            *args,
-            directory=str(ROOT),
-            **kwargs
-        )
+class handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
 
-        if self.path == "/api/health":
+        response = {
+            "status": "ok",
+            "service": "cyclone-impact-graph",
+            "mode": "prototype"
+        }
 
-            payload = {
-                "status": "ok",
-                "service": "cyclone-impact-graph",
-                "mode": "prototype"
-            }
+        body = json.dumps(response).encode("utf-8")
 
-            body = json.dumps(payload).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
 
-            self.send_response(200)
-            self.send_header(
-                "Content-Type",
-                "application/json"
-            )
-            self.send_header(
-                "Content-Length",
-                str(len(body))
-            )
-            self.end_headers()
-
-            self.wfile.write(body)
-            return
-
-        super().do_GET()
+        self.wfile.write(body)
 
     def do_POST(self):
-
-        if self.path != "/api/hazard":
-
-            self.send_response(404)
-            self.end_headers()
-            return
 
         try:
 
             content_length = int(
-                self.headers.get(
-                    "Content-Length",
-                    0
-                )
+                self.headers.get("Content-Length", 0)
             )
 
-            body = self.rfile.read(
-                content_length
-            )
+            body = self.rfile.read(content_length)
 
             data = json.loads(body)
 
@@ -129,7 +91,7 @@ class Handler(SimpleHTTPRequestHandler):
 
             response_body = json.dumps(
                 response
-            ).encode()
+            ).encode("utf-8")
 
             self.send_response(200)
 
@@ -145,15 +107,17 @@ class Handler(SimpleHTTPRequestHandler):
 
             self.end_headers()
 
-            self.wfile.write(
-                response_body
-            )
+            self.wfile.write(response_body)
 
         except Exception as error:
 
-            error_body = json.dumps({
+            response = {
                 "error": str(error)
-            }).encode()
+            }
+
+            response_body = json.dumps(
+                response
+            ).encode("utf-8")
 
             self.send_response(400)
 
@@ -164,24 +128,9 @@ class Handler(SimpleHTTPRequestHandler):
 
             self.send_header(
                 "Content-Length",
-                str(len(error_body))
+                str(len(response_body))
             )
 
             self.end_headers()
 
-            self.wfile.write(
-                error_body
-            )
-
-
-if __name__ == "__main__":
-
-    print(
-        "Cyclone Impact Graph running at "
-        "http://127.0.0.1:8000"
-    )
-
-    ThreadingHTTPServer(
-        ("127.0.0.1", 8000),
-        Handler
-    ).serve_forever()
+            self.wfile.write(response_body)
